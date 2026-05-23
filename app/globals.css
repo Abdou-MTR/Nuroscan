@@ -1,0 +1,626 @@
+/* ═══════════════════════════════════════════════════════════════
+   NeuroScan AI — Global Stylesheet
+   Arctic Ice Design System · Space Grotesk Typography
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Google Fonts: Space Grotesk ─────────────────────────────── */
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap");
+
+/* ── Tailwind Layers ─────────────────────────────────────────── */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════════════
+   DESIGN TOKENS — Arctic Ice :root variables
+   Sourced 1-to-1 from neuroscan_arctic_ice_full-1.html :root
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  /* ── Backgrounds ── */
+  --ice-bg: linear-gradient(160deg, #ebf5ff 0%, #d4ecfb 40%, #e8f4ff 100%);
+  --ice-body: #c5dcf0;
+
+  /* ── Brand ── */
+  --ice-dark: #0a2540;
+  --ice-mid: #1a5276;
+  --ice-accent: #0ea5e9;
+  --ice-accent2: #0284c7;
+  --ice-sky: #38bdf8;
+
+  /* ── Text ── */
+  --ice-text: #0a2540;
+  --ice-text2: #355878;
+  --ice-text3: #6b98ba;
+
+  /* ── Surfaces ── */
+  --ice-border: rgba(14, 165, 233, 0.18);
+  --ice-card: rgba(255, 255, 255, 0.6);
+  --ice-card2: rgba(255, 255, 255, 0.45);
+  --ice-glass: rgba(255, 255, 255, 0.55);
+
+  /* ── Semantic: Red / Diagnosis ── */
+  --red: #ef4444;
+  --red-bg: rgba(239, 68, 68, 0.08);
+  --red-border: rgba(239, 68, 68, 0.18);
+  --red-dark: #991b1b;
+  --red-mid: #b91c1c;
+  --red-dc: #dc2626;
+
+  /* ── Semantic: Green / Clear ── */
+  --green: #10b981;
+  --green-bg: rgba(16, 185, 129, 0.08);
+  --green-border: rgba(16, 185, 129, 0.2);
+
+  /* ── Semantic: Amber / Review ── */
+  --amber: #f59e0b;
+  --amber-bg: rgba(245, 158, 11, 0.08);
+  --amber-border: rgba(245, 158, 11, 0.2);
+
+  /* ── Semantic: Blue / Pituitary / Info ── */
+  --blue-bg: rgba(14, 165, 233, 0.08);
+  --blue-border: rgba(14, 165, 233, 0.18);
+
+  /* ── Gradients (as CSS vars for inline usage) ── */
+  --gradient-brand: linear-gradient(135deg, #38bdf8, #0284c7);
+  --gradient-mri: linear-gradient(135deg, #0a1e35, #0a2a40, #0e3550);
+  --gradient-heat: linear-gradient(135deg, #060508, #12050a);
+  --gradient-overlay: linear-gradient(135deg, #080e18, #0c1828);
+  --gradient-report-header: linear-gradient(135deg, #0a2540, #1a4a7a);
+  --gradient-conf-bar: linear-gradient(90deg, #38bdf8, #ef4444);
+
+  /* ── Layout Constants ── */
+  --nav-height: 62px;
+  --sidebar-width: 224px;
+  --analysis-sidebar-width: 268px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BASE LAYER — Global element defaults
+   ═══════════════════════════════════════════════════════════════ */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    background-color: var(--ice-body);
+    background: var(--ice-bg);
+    min-height: 100vh;
+    color: var(--ice-text);
+  }
+
+  /* Focus ring — accessible, on-brand */
+  :focus-visible {
+    outline: 2px solid var(--ice-accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: rgba(14, 165, 233, 0.04);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(14, 165, 233, 0.25);
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(14, 165, 233, 0.45);
+  }
+
+  /* Selection */
+  ::selection {
+    background: rgba(14, 165, 233, 0.2);
+    color: var(--ice-dark);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   KEYFRAME ANIMATIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* MRI Scanline — continuous vertical translation (from design spec) */
+@keyframes scan {
+  0%   { top: 0%; }
+  100% { top: 100%; }
+}
+
+/* Subtle float for hero decoration cards */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+
+/* Fade-up entrance animation */
+@keyframes fadeUp {
+  0%   { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Fade in */
+@keyframes fadeIn {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* Pulse glow for status indicator dots */
+@keyframes pulseGlow {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* Shimmer for skeleton loading states */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Scale-in for modals / dialogs */
+@keyframes scaleIn {
+  0%   { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   COMPONENTS LAYER
+   Reusable glassmorphism primitives and layout helpers
+   ═══════════════════════════════════════════════════════════════ */
+@layer components {
+
+  /* ── Ice Background ─────────────────────────────────────────── */
+  .ice-bg {
+    background: var(--ice-bg);
+    position: relative;
+  }
+
+  /* ── Glass Cards ────────────────────────────────────────────── */
+  /* Matches .glass in design: 20px blur, white 55%, white border */
+  .glass {
+    background: var(--ice-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(14, 165, 233, 0.08);
+  }
+
+  /* Matches .glass-sm: 16px blur, slightly more opaque */
+  .glass-sm {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.70);
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(14, 165, 233, 0.06);
+  }
+
+  /* ── MRI Scanline ───────────────────────────────────────────── */
+  /* Absolutely positioned inside the MRI placeholder container */
+  .mri-scanline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(14, 165, 233, 0.4),
+      transparent
+    );
+    animation: scan 3s linear infinite;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* ── Ice Crystal Decorations ────────────────────────────────── */
+  .ice-crystal {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    pointer-events: none;
+  }
+
+  /* ── Ice Gradient Orb ───────────────────────────────────────── */
+  .ice-gradient-orb {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(40px);
+    opacity: 0.5;
+  }
+
+  /* ── Navigation ─────────────────────────────────────────────── */
+  .ice-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    height: var(--nav-height);
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.8);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 20px rgba(14, 165, 233, 0.08);
+  }
+
+  /* ── Sidebar ────────────────────────────────────────────────── */
+  .ice-sidebar {
+    width: var(--sidebar-width);
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255, 255, 255, 0.75);
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 18px;
+    font-size: 13.5px;
+    color: var(--ice-text2);
+    cursor: pointer;
+    transition: all 0.15s;
+    border-left: 2.5px solid transparent;
+    font-weight: 500;
+  }
+  .sidebar-item:hover {
+    background: rgba(14, 165, 233, 0.06);
+    color: var(--ice-dark);
+  }
+  .sidebar-item.active {
+    background: rgba(14, 165, 233, 0.08);
+    color: var(--ice-accent2);
+    border-left-color: var(--ice-accent);
+  }
+
+  /* ── Buttons ────────────────────────────────────────────────── */
+  .btn-ice-primary {
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: "Space Grotesk", sans-serif;
+    background: var(--gradient-brand);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);
+    transition: all 0.2s;
+  }
+  .btn-ice-primary:hover {
+    box-shadow: 0 6px 18px rgba(14, 165, 233, 0.35);
+    transform: translateY(-1px);
+  }
+
+  .btn-ice-ghost {
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid rgba(14, 165, 233, 0.2);
+    font-family: "Space Grotesk", sans-serif;
+    background: rgba(255, 255, 255, 0.6);
+    color: var(--ice-text2);
+    backdrop-filter: blur(8px);
+    transition: all 0.2s;
+  }
+  .btn-ice-ghost:hover {
+    background: rgba(255, 255, 255, 0.85);
+    color: var(--ice-dark);
+  }
+
+  /* ── Form Inputs ────────────────────────────────────────────── */
+  .ice-input {
+    width: 100%;
+    padding: 11px 14px;
+    background: rgba(255, 255, 255, 0.65);
+    border: 1px solid rgba(14, 165, 233, 0.18);
+    border-radius: 9px;
+    color: var(--ice-dark);
+    font-size: 14px;
+    font-family: "Space Grotesk", sans-serif;
+    outline: none;
+    transition: all 0.2s;
+    backdrop-filter: blur(8px);
+  }
+  .ice-input:focus {
+    border-color: var(--ice-accent);
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+  }
+  .ice-input::placeholder {
+    color: var(--ice-text3);
+  }
+
+  /* ── Diagnosis Pills ────────────────────────────────────────── */
+  .pill {
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 99px;
+  }
+  .pill-red {
+    background: var(--red-bg);
+    color: var(--red);
+    border: 1px solid var(--red-border);
+  }
+  .pill-green {
+    background: var(--green-bg);
+    color: var(--green);
+    border: 1px solid var(--green-border);
+  }
+  .pill-amber {
+    background: var(--amber-bg);
+    color: #92400e;
+    border: 1px solid var(--amber-border);
+  }
+  .pill-blue {
+    background: var(--blue-bg);
+    color: var(--ice-accent2);
+    border: 1px solid var(--blue-border);
+  }
+
+  /* ── Status Badges ──────────────────────────────────────────── */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    font-weight: 500;
+  }
+  .s-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .s-dot-red    { background: var(--red); }
+  .s-dot-green  { background: var(--green); }
+  .s-dot-amber  { background: var(--amber); }
+
+  /* ── Upload Zone ────────────────────────────────────────────── */
+  .upload-zone {
+    background: rgba(255, 255, 255, 0.4);
+    border: 2px dashed rgba(14, 165, 233, 0.25);
+    border-radius: 16px;
+    padding: 48px 28px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    backdrop-filter: blur(12px);
+  }
+  .upload-zone:hover {
+    border-color: var(--ice-accent);
+    background: rgba(255, 255, 255, 0.6);
+  }
+  .upload-zone.dragging {
+    border-color: var(--ice-accent);
+    background: rgba(14, 165, 233, 0.06);
+    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+  }
+
+  /* ── Scan Item (recent list) ────────────────────────────────── */
+  .scan-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+    border-bottom: 1px solid rgba(14, 165, 233, 0.07);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .scan-item:hover { background: rgba(14, 165, 233, 0.04); }
+  .scan-item:last-child { border-bottom: none; }
+
+  /* ── Card Header ────────────────────────────────────────────── */
+  .card-hdr {
+    padding: 16px 18px;
+    border-bottom: 1px solid rgba(14, 165, 233, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* ── AI Disclaimer Note ─────────────────────────────────────── */
+  .ai-note {
+    background: var(--blue-bg);
+    border: 1px solid var(--blue-border);
+    border-radius: 12px;
+    padding: 13px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+  }
+
+  /* ── Shimmer skeleton ───────────────────────────────────────── */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      rgba(14, 165, 233, 0.06) 25%,
+      rgba(14, 165, 233, 0.12) 50%,
+      rgba(14, 165, 233, 0.06) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.8s linear infinite;
+    border-radius: 8px;
+  }
+
+  /* ── Probability Bar ────────────────────────────────────────── */
+  .prob-bar {
+    flex: 1;
+    height: 5px;
+    background: rgba(14, 165, 233, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .prob-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s ease;
+  }
+
+  /* ── Confidence Bar ─────────────────────────────────────────── */
+  .conf-bar {
+    height: 5px;
+    background: rgba(239, 68, 68, 0.12);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .conf-fill {
+    height: 100%;
+    background: var(--red);
+    border-radius: 3px;
+    transition: width 0.6s ease;
+  }
+
+  /* ── Role Tabs (Login) ──────────────────────────────────────── */
+  .role-tabs {
+    display: flex;
+    background: rgba(14, 165, 233, 0.06);
+    border-radius: 10px;
+    padding: 4px;
+    gap: 3px;
+    border: 1px solid rgba(14, 165, 233, 0.12);
+  }
+  .role-tab {
+    flex: 1;
+    text-align: center;
+    padding: 8px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--ice-text3);
+  }
+  .role-tab.active {
+    background: rgba(255, 255, 255, 0.8);
+    color: var(--ice-dark);
+    box-shadow: 0 2px 8px rgba(14, 165, 233, 0.12);
+  }
+
+  /* ── View Tabs (Analysis) ───────────────────────────────────── */
+  .view-tabs {
+    display: flex;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(14, 165, 233, 0.15);
+    border-radius: 9px;
+    padding: 3px;
+    gap: 2px;
+    backdrop-filter: blur(8px);
+  }
+  .vtab {
+    padding: 6px 15px;
+    border-radius: 7px;
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--ice-text3);
+    transition: all 0.2s;
+  }
+  .vtab.active {
+    background: rgba(255, 255, 255, 0.85);
+    color: var(--ice-dark);
+    box-shadow: 0 2px 8px rgba(14, 165, 233, 0.1);
+  }
+
+  /* ── Patients Table ─────────────────────────────────────────── */
+  .patients-table table { width: 100%; border-collapse: collapse; }
+  .patients-table thead th {
+    padding: 11px 18px;
+    text-align: left;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--ice-text3);
+    letter-spacing: 0.3px;
+    background: rgba(14, 165, 233, 0.04);
+    border-bottom: 1px solid rgba(14, 165, 233, 0.1);
+  }
+  .patients-table tbody td {
+    padding: 12px 18px;
+    font-size: 13.5px;
+    color: var(--ice-text2);
+    border-bottom: 1px solid rgba(14, 165, 233, 0.06);
+  }
+  .patients-table tbody tr:hover { background: rgba(255, 255, 255, 0.4); }
+  .patients-table tbody tr:last-child td { border-bottom: none; }
+
+  /* ── Screen divider ─────────────────────────────────────────── */
+  .screen-divider {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(14, 165, 233, 0.2),
+      transparent
+    );
+    margin: 40px 0 0;
+  }
+
+  /* ── Entrance animation helpers ─────────────────────────────── */
+  .animate-fade-up   { animation: fadeUp 0.4s ease-out both; }
+  .animate-fade-in   { animation: fadeIn 0.3s ease-out both; }
+  .animate-float     { animation: float 4s ease-in-out infinite; }
+  .animate-scan      { animation: scan 3s linear infinite; }
+  .animate-scale-in  { animation: scaleIn 0.25s ease-out both; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   UTILITIES LAYER — Single-purpose overrides
+   ═══════════════════════════════════════════════════════════════ */
+@layer utilities {
+  /* Gradient text clip (hero heading) */
+  .gradient-text {
+    background: var(--gradient-brand);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Prevent backdrop-filter on Safari fallback */
+  @supports not (backdrop-filter: blur(1px)) {
+    .glass    { background: rgba(255, 255, 255, 0.88); }
+    .glass-sm { background: rgba(255, 255, 255, 0.85); }
+    .ice-nav  { background: rgba(255, 255, 255, 0.95); }
+  }
+
+  /* Truncate long patient names in table cells */
+  .truncate-cell {
+    max-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Tab no-select */
+  .no-select {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+}
