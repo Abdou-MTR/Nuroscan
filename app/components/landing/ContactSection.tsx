@@ -118,7 +118,7 @@ export function ContactSection() {
                   <input
                     className="form-input"
                     type="text"
-                    placeholder="Ahmed"
+                    placeholder="Abderrahmane"
                     value={form.firstName}
                     onChange={(e) => setForm({ ...form, firstName: e.target.value })}
                     style={getErrorStyle("firstName")}
@@ -129,7 +129,7 @@ export function ContactSection() {
                   <input
                     className="form-input"
                     type="text"
-                    placeholder="Karim"
+                    placeholder="Metiri"
                     value={form.lastName}
                     onChange={(e) => setForm({ ...form, lastName: e.target.value })}
                     style={getErrorStyle("lastName")}

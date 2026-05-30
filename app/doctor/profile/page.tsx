@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 
@@ -24,12 +25,17 @@ export default function DoctorProfilePage() {
 
   const [recentScans, setRecentScans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   // Edit profile state
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ name: "", gender: "", speciality: "", dateOfBirth: "" });
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const openEditModal = () => {
     setEditForm({ name: profile.name, gender: profile.gender, speciality: profile.speciality, dateOfBirth: profile.dateOfBirth });
@@ -43,7 +49,6 @@ export default function DoctorProfilePage() {
     try {
       const supabase = createClient();
       
-      // Get current user ID to update profiles table
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
@@ -57,7 +62,6 @@ export default function DoctorProfilePage() {
       });
       if (authError) throw authError;
 
-      // Update public profiles table
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
@@ -90,29 +94,27 @@ export default function DoctorProfilePage() {
         return;
       }
 
-        // Fetch extended profile data from the public profiles table
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-        
-        console.log('Doctor profile fetch result:', { profileData, profileError, userMeta: user.user_metadata });
-        
-        if (profileError) {
-          console.error('Error fetching profile:', profileError);
-        }
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      
+      console.log('Doctor profile fetch result:', { profileData, profileError, userMeta: user.user_metadata });
+      
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+      }
 
-        const meta = user.user_metadata || {};
-        const name = profileData?.full_name || meta.full_name || user.email?.split('@')[0] || 'Doctor';
-        const email = profileData?.email || user.email || 'No email provided';
-        const role = profileData?.role || meta.role || 'Doctor';
-        const gender = profileData?.gender || meta.gender || '';
-        const dateOfBirth = profileData?.date_of_birth || meta.date_of_birth || '';
-        const speciality = profileData?.speciality || meta.speciality || '';
-        setProfile({ name, email, role, gender, dateOfBirth, speciality });
+      const meta = user.user_metadata || {};
+      const name = profileData?.full_name || meta.full_name || user.email?.split('@')[0] || 'Doctor';
+      const email = profileData?.email || user.email || 'No email provided';
+      const role = profileData?.role || meta.role || 'Doctor';
+      const gender = profileData?.gender || meta.gender || '';
+      const dateOfBirth = profileData?.date_of_birth || meta.date_of_birth || '';
+      const speciality = profileData?.speciality || meta.speciality || '';
+      setProfile({ name, email, role, gender, dateOfBirth, speciality });
 
-      // Step 1: Fetch all patients assigned to this doctor (with IDs and names)
       const { data: patientsData } = await supabase
         .from("patients")
         .select("id, created_at, name, patient_id")
@@ -134,7 +136,6 @@ export default function DoctorProfilePage() {
         });
       }
 
-      // Step 2: Fetch scans for those patients
       const patientIds = Object.keys(patientMap);
       let evaluatedCount = 0;
       let evaluatedThisMonth = 0;
@@ -162,7 +163,6 @@ export default function DoctorProfilePage() {
             }
           });
 
-          // Attach patient info and take top 10
           const enriched = scansData.slice(0, 10).map((s: any) => ({
             ...s,
             patients: patientMap[s.patient_id] || { full_name: "Unknown", patient_id: "N/A" },
@@ -191,10 +191,10 @@ export default function DoctorProfilePage() {
 
   const getAvatarColor = (name: string) => {
     const colors = [
-      "from-[#f87171] to-[#dc2626]", // red
-      "from-[#fbbf24] to-[#d97706]", // yellow
-      "from-[#34d399] to-[#059669]", // green
-      "from-[#818cf8] to-[#4f46e5]", // purple
+      "from-[#f87171] to-[#dc2626]",
+      "from-[#fbbf24] to-[#d97706]",
+      "from-[#34d399] to-[#059669]",
+      "from-[#818cf8] to-[#4f46e5]",
     ];
     let sum = 0;
     for (let i = 0; i < name.length; i++) sum += name.charCodeAt(i);
@@ -207,7 +207,7 @@ export default function DoctorProfilePage() {
       case "Meningioma": return "bg-[#fef3c7] text-[#92400e]";
       case "Pituitary": return "bg-[#e0e7ff] text-[#3730a3]";
       case "No Tumor": return "bg-[#d1fae5] text-[#065f46]";
-      default: return "bg-[#fde8e8] text-[#c53030]"; // default to red style for unknown
+      default: return "bg-[#fde8e8] text-[#c53030]";
     }
   };
 
@@ -239,9 +239,6 @@ export default function DoctorProfilePage() {
 
   return (
     <div className="flex-1 p-[36px_40px_48px] overflow-auto bg-[#ddeeff] min-h-screen text-[#1a2b3c] font-sans">
-      
-      {/* Screen badge */}
-    
 
       {/* Header */}
       <div className="flex items-start justify-between mb-[32px]">
@@ -250,7 +247,15 @@ export default function DoctorProfilePage() {
           <p className="text-[13.5px] text-[#8ca8be] mt-[3px]">Manage your personal and professional information</p>
         </div>
         <div className="flex items-center gap-[10px]">
-    
+          <button
+            type="button"
+                                       style={{fontSize: "12px",fontWeight: "600" ,color: "#fff", padding: "10px 22px", textDecoration: "none" ,border: "none"  ,display: "inline-block" }}
+
+            onClick={openEditModal}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-[#38BDF8] to-[#0284C7] text-white text-sm font-semibold rounded-[8px] hover:shadow-[0_4px_12px_rgba(14,165,233,0.25)] transition-all cursor-pointer border-none"
+          >
+            Edit Profile
+          </button>
         </div>
       </div>
 
@@ -260,20 +265,18 @@ export default function DoctorProfilePage() {
         <div className="bg-white rounded-[16px] border border-[#daeaf6] shadow-[0_2px_16px_rgba(26,155,220,0.08)] hover:shadow-[0_8px_32px_rgba(26,155,220,0.16)] transition-shadow duration-200 overflow-hidden">
           
           <div className="bg-gradient-to-br from-[#1a9bdc] to-[#0e6fa8] pt-[32px] px-[28px] pb-[24px] flex flex-col items-center relative overflow-hidden">
-            {/* SVG Background Pattern */}
             <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width=%27120%27%20height=%27120%27%20viewBox=%270%200%20120%20120%27%20xmlns=%27http://www.w3.org/2000/svg%27%3E%3Ccircle%20cx=%2760%27%20cy=%2760%27%20r=%2755%27%20fill=%27none%27%20stroke=%27rgba(255,255,255,0.06)%27%20stroke-width=%2720%27/%3E%3Ccircle%20cx=%2760%27%20cy=%2760%27%20r=%2735%27%20fill=%27none%27%20stroke=%27rgba(255,255,255,0.04)%27%20stroke-width=%2714%27/%3E%3C/svg%3E')] bg-center bg-cover"></div>
             
-            <div className="w-[88px] h-[88px] rounded-full bg-[rgba(255,255,255,0.2)] flex items-center justify-center text-white text-[32px] font-bold border-[3px] border-[rgba(255,255,255,0.4)] mb-[14px] relative z-10 backdrop-blur-[4px]
-            "style={{fontWeight: "600" ,color: "#fff", textDecoration: "none" ,}}
-                        >
-               {getInitials(profile.name)}
+            <div className="w-[88px] h-[88px] rounded-full bg-[rgba(255,255,255,0.2)] flex items-center justify-center text-white text-[32px] font-bold border-[3px] border-[rgba(255,255,255,0.4)] mb-[14px] relative z-10 backdrop-blur-[4px]"
+              style={{ fontWeight: "600", color: "#fff", textDecoration: "none" }}>
+              {getInitials(profile.name)}
             </div>
             
-            <h2 style={{fontWeight: "600" ,color: "#fff", textDecoration: "none" ,}} 
-            className="relative z-10 text-[19px] font-bold text-white text-center tracking-[-0.3px]">{profile.name}</h2>
+            <h2 style={{ fontWeight: "600", color: "#fff", textDecoration: "none" }}
+              className="relative z-10 text-[19px] font-bold text-white text-center tracking-[-0.3px]">{profile.name}</h2>
             
-            <div 
-            style={{fontWeight: "600" ,color: "#fff", textDecoration: "none" ,}}className="relative z-10 mt-[8px] bg-[rgba(255,255,255,0.2)] border border-[rgba(255,255,255,0.3)] text-white text-[12px] font-medium px-[14px] py-[4px] rounded-[20px] backdrop-blur-[4px]">
+            <div style={{ fontWeight: "600", color: "#fff", textDecoration: "none" }}
+              className="relative z-10 mt-[8px] bg-[rgba(255,255,255,0.2)] border border-[rgba(255,255,255,0.3)] text-white text-[12px] font-medium px-[14px] py-[4px] rounded-[20px] backdrop-blur-[4px]">
               {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}
             </div>
             
@@ -283,7 +286,7 @@ export default function DoctorProfilePage() {
             </div>
           </div>
 
-          <div className="px-[28px] py-[24px]" style={{backgroundColor: "#f9f9f9"}}>
+          <div className="px-[28px] py-[24px]" style={{ backgroundColor: "#f9f9f9" }}>
             <div className="flex items-start gap-[12px] py-[12px] border-b border-[#daeaf6]">
               <div className="w-[34px] h-[34px] rounded-[9px] bg-[#e8f5fd] flex items-center justify-center text-[#1a9bdc] shrink-0">
                 <svg className="w-[16px] h-[16px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="8" r="4"/><path strokeLinecap="round" strokeLinejoin="round" d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
@@ -337,7 +340,7 @@ export default function DoctorProfilePage() {
 
           <div className="h-[1px] bg-[#daeaf6] m-0"></div>
           
-          <div className="px-[24px] py-[20px]"  style={{backgroundColor: "#f9f9f9"}}>
+          <div className="px-[24px] py-[20px]" style={{ backgroundColor: "#f9f9f9" }}>
             <div className="text-[12px] font-semibold text-[#8ca8be] uppercase tracking-[0.08em] mb-[12px]">Areas of Expertise</div>
             <div className="flex flex-wrap gap-[8px]">
               <span className="bg-[#e8f5fd] text-[#1a9bdc] text-[12px] font-medium px-[13px] py-[5px] rounded-[20px] border border-[rgba(26,155,220,0.2)]">Brain Tumor</span>
@@ -355,7 +358,7 @@ export default function DoctorProfilePage() {
           {/* Stats Row */}
           <div className="grid grid-cols-3 gap-[16px]">
             
-            <div className="bg-white border border-[#daeaf6] rounded-[14px] p-[22px_20px] shadow-[0_2px_16px_rgba(26,155,220,0.08)] hover:shadow-[0_8px_32px_rgba(26,155,220,0.16)] hover:-translate-y-[2px] transition-all duration-200 relative overflow-hidden animate-[fadeUp_0.45s_cubic-bezier(0.22,0.9,0.36,1)_both]" style={{ animationDelay: '0.05s' ,backgroundColor: "#f9f9f9"}}>
+            <div className="bg-white border border-[#daeaf6] rounded-[14px] p-[22px_20px] shadow-[0_2px_16px_rgba(26,155,220,0.08)] hover:shadow-[0_8px_32px_rgba(26,155,220,0.16)] hover:-translate-y-[2px] transition-all duration-200 relative overflow-hidden animate-[fadeUp_0.45s_cubic-bezier(0.22,0.9,0.36,1)_both]" style={{ animationDelay: '0.05s', backgroundColor: "#f9f9f9" }}>
               <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#1a9bdc] to-[#0e6fa8]"></div>
               <div className="text-[12px] font-medium text-[#8ca8be] mb-[8px] uppercase tracking-[0.07em]">Total Patients</div>
               <div className="text-[34px] font-bold text-[#1a2b3c] tracking-[-1px] leading-none">{stats.patients}</div>
@@ -364,7 +367,7 @@ export default function DoctorProfilePage() {
               </div>
             </div>
             
-            <div className="bg-white border border-[#daeaf6] rounded-[14px] p-[22px_20px] shadow-[0_2px_16px_rgba(26,155,220,0.08)] hover:shadow-[0_8px_32px_rgba(26,155,220,0.16)] hover:-translate-y-[2px] transition-all duration-200 relative overflow-hidden animate-[fadeUp_0.45s_cubic-bezier(0.22,0.9,0.36,1)_both]" style={{ animationDelay: '0.1s',backgroundColor: "#f9f9f9" }}>
+            <div className="bg-white border border-[#daeaf6] rounded-[14px] p-[22px_20px] shadow-[0_2px_16px_rgba(26,155,220,0.08)] hover:shadow-[0_8px_32px_rgba(26,155,220,0.16)] hover:-translate-y-[2px] transition-all duration-200 relative overflow-hidden animate-[fadeUp_0.45s_cubic-bezier(0.22,0.9,0.36,1)_both]" style={{ animationDelay: '0.1s', backgroundColor: "#f9f9f9" }}>
               <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#22c55e] to-[#16a34a]"></div>
               <div className="text-[12px] font-medium text-[#8ca8be] mb-[8px] uppercase tracking-[0.07em]">Reports Evaluated</div>
               <div className="text-[34px] font-bold text-[#1a2b3c] tracking-[-1px] leading-none">{stats.evaluated}</div>
@@ -373,7 +376,7 @@ export default function DoctorProfilePage() {
               </div>
             </div>
 
-            <div className="bg-white border border-[#daeaf6] rounded-[14px] p-[22px_20px] shadow-[0_2px_16px_rgba(26,155,220,0.08)] hover:shadow-[0_8px_32px_rgba(26,155,220,0.16)] hover:-translate-y-[2px] transition-all duration-200 relative overflow-hidden animate-[fadeUp_0.45s_cubic-bezier(0.22,0.9,0.36,1)_both]" style={{ animationDelay: '0.15s',backgroundColor: "#f9f9f9" }}>
+            <div className="bg-white border border-[#daeaf6] rounded-[14px] p-[22px_20px] shadow-[0_2px_16px_rgba(26,155,220,0.08)] hover:shadow-[0_8px_32px_rgba(26,155,220,0.16)] hover:-translate-y-[2px] transition-all duration-200 relative overflow-hidden animate-[fadeUp_0.45s_cubic-bezier(0.22,0.9,0.36,1)_both]" style={{ animationDelay: '0.15s', backgroundColor: "#f9f9f9" }}>
               <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#f59e0b] to-[#d97706]"></div>
               <div className="text-[12px] font-medium text-[#8ca8be] mb-[8px] uppercase tracking-[0.07em]">Pending Review</div>
               <div className="text-[34px] font-bold text-[#1a2b3c] tracking-[-1px] leading-none">{stats.pending}</div>
@@ -385,11 +388,10 @@ export default function DoctorProfilePage() {
           </div>
 
           {/* Table */}
-          <div className="bg-white rounded-[16px] border border-[#daeaf6] shadow-[0_2px_16px_rgba(26,155,220,0.08)] hover:shadow-[0_8px_32px_rgba(26,155,220,0.16)] transition-shadow duration-200 overflow-hidden animate-[fadeUp_0.45s_cubic-bezier(0.22,0.9,0.36,1)_both]" 
-          style={{ animationDelay: '0.2s' ,backgroundColor: "#f9f9f9", border: "1px solid #daeaf6", borderRadius: "16px", boxShadow: "0 2px 16px rgba(26,155,220,0.08)", transition: "box-shadow 0.3s ease", overflow: "hidden" }}>
+          <div className="bg-white rounded-[16px] border border-[#daeaf6] shadow-[0_2px_16px_rgba(26,155,220,0.08)] hover:shadow-[0_8px_32px_rgba(26,155,220,0.16)] transition-shadow duration-200 overflow-hidden animate-[fadeUp_0.45s_cubic-bezier(0.22,0.9,0.36,1)_both]"
+            style={{ animationDelay: '0.2s', backgroundColor: "#f9f9f9", border: "1px solid #daeaf6", borderRadius: "16px", boxShadow: "0 2px 16px rgba(26,155,220,0.08)", transition: "box-shadow 0.3s ease", overflow: "hidden" }}>
             <div className="flex items-center justify-between px-[24px] pt-[20px]">
-              <span className="text-[15px] font-bold text-[#1a2b3c]"
-              style={{fontWeight: "600" , textDecoration: "none" ,}}>Recent Reports Evaluated</span>
+              <span className="text-[15px] font-bold text-[#1a2b3c]" style={{ fontWeight: "600", textDecoration: "none" }}>Recent Reports Evaluated</span>
               <Link href="/doctor/reports" className="text-[12.5px] font-medium text-[#1a9bdc] hover:underline decoration-[#1a9bdc] transition-all">
                 View all →
               </Link>
@@ -460,40 +462,107 @@ export default function DoctorProfilePage() {
         </div>
       </div>
 
-      {/* Edit Profile Modal */}
-      {isEditing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(10,37,64,0.45)", backdropFilter: "blur(4px)" }}>
-          <div className="bg-white rounded-[18px] shadow-[0_16px_48px_rgba(26,155,220,0.18)] w-full max-w-[440px] mx-4 animate-[fadeUp_0.25s_ease] overflow-hidden">
+      {/* Edit Profile Modal — portal with mounted guard */}
+      {mounted && isEditing && createPortal(
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            background: "rgba(10,37,64,0.45)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          onClick={() => setIsEditing(false)}
+        >
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: "18px",
+              boxShadow: "0 16px 48px rgba(26,155,220,0.18)",
+              width: "100%",
+              maxWidth: "440px",
+              margin: "0 16px",
+              overflow: "hidden",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Modal Header */}
-            <div className="bg-gradient-to-br from-[#1a9bdc] to-[#0e6fa8] px-[28px] py-[20px] flex items-center justify-between">
-              <h3 className="text-[17px] font-bold text-white tracking-[-0.3px]">Edit Profile</h3>
-              <button onClick={() => setIsEditing(false)} className="w-[28px] h-[28px] rounded-full bg-[rgba(255,255,255,0.2)] flex items-center justify-center text-white hover:bg-[rgba(255,255,255,0.3)] transition-colors cursor-pointer border-none">
-                <svg className="w-[14px] h-[14px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            <div style={{
+              background: "linear-gradient(135deg, #1a9bdc, #0e6fa8)",
+              padding: "20px 28px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}>
+              <h3 style={{ fontSize: "17px", fontWeight: 700, color: "#fff", margin: 0, letterSpacing: "-0.3px" }}>Edit Profile</h3>
+              <button
+                onClick={() => setIsEditing(false)}
+                style={{
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "50%",
+                  background: "rgba(255,255,255,0.2)",
+                  border: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#fff",
+                  cursor: "pointer",
+                }}
+              >
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
               </button>
             </div>
 
             {/* Modal Body */}
-            <div className="px-[28px] py-[24px] flex flex-col gap-[18px]">
+            <div style={{ padding: "24px 28px", display: "flex", flexDirection: "column", gap: "18px" }}>
+
               {/* Full Name */}
               <div>
-                <label className="block text-[12px] font-semibold text-[#8ca8be] uppercase tracking-[0.06em] mb-[6px]">Full Name</label>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#8ca8be", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "6px" }}>Full Name</label>
                 <input
                   type="text"
                   value={editForm.name}
                   onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
-                  className="w-full px-[14px] py-[10px] rounded-[10px] border border-[#daeaf6] text-[14px] text-[#1a2b3c] outline-none focus:border-[#1a9bdc] focus:shadow-[0_0_0_3px_rgba(26,155,220,0.12)] transition-all"
                   placeholder="Dr. Ahmed Karim"
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    borderRadius: "10px",
+                    border: "1px solid #daeaf6",
+                    fontSize: "14px",
+                    color: "#1a2b3c",
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
                 />
               </div>
 
               {/* Gender */}
               <div>
-                <label className="block text-[12px] font-semibold text-[#8ca8be] uppercase tracking-[0.06em] mb-[6px]">Gender</label>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#8ca8be", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "6px" }}>Gender</label>
                 <select
                   value={editForm.gender}
                   onChange={(e) => setEditForm((f) => ({ ...f, gender: e.target.value }))}
-                  className="w-full px-[14px] py-[10px] rounded-[10px] border border-[#daeaf6] text-[14px] text-[#1a2b3c] outline-none focus:border-[#1a9bdc] focus:shadow-[0_0_0_3px_rgba(26,155,220,0.12)] transition-all bg-white cursor-pointer"
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    borderRadius: "10px",
+                    border: "1px solid #daeaf6",
+                    fontSize: "14px",
+                    color: "#1a2b3c",
+                    outline: "none",
+                    background: "#fff",
+                    cursor: "pointer",
+                    boxSizing: "border-box",
+                  }}
                 >
+                  <option value="">Select Gender</option>
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                 </select>
@@ -501,53 +570,99 @@ export default function DoctorProfilePage() {
 
               {/* Speciality */}
               <div>
-                <label className="block text-[12px] font-semibold text-[#8ca8be] uppercase tracking-[0.06em] mb-[6px]">Speciality</label>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#8ca8be", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "6px" }}>Speciality</label>
                 <input
                   type="text"
                   value={editForm.speciality}
                   onChange={(e) => setEditForm((f) => ({ ...f, speciality: e.target.value }))}
-                  className="w-full px-[14px] py-[10px] rounded-[10px] border border-[#daeaf6] text-[14px] text-[#1a2b3c] outline-none focus:border-[#1a9bdc] focus:shadow-[0_0_0_3px_rgba(26,155,220,0.12)] transition-all"
                   placeholder="Neuroradiology & Oncology"
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    borderRadius: "10px",
+                    border: "1px solid #daeaf6",
+                    fontSize: "14px",
+                    color: "#1a2b3c",
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
                 />
               </div>
 
               {/* Date of Birth */}
               <div>
-                <label className="block text-[12px] font-semibold text-[#8ca8be] uppercase tracking-[0.06em] mb-[6px]">Date of Birth</label>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#8ca8be", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "6px" }}>Date of Birth</label>
                 <input
                   type="date"
-                  value={editForm.dateOfBirth !== "Not Specified" ? editForm.dateOfBirth : ""}
+                  value={editForm.dateOfBirth || ""}
                   onChange={(e) => setEditForm((f) => ({ ...f, dateOfBirth: e.target.value }))}
-                  className="w-full px-[14px] py-[10px] rounded-[10px] border border-[#daeaf6] text-[14px] text-[#1a2b3c] outline-none focus:border-[#1a9bdc] focus:shadow-[0_0_0_3px_rgba(26,155,220,0.12)] transition-all"
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    borderRadius: "10px",
+                    border: "1px solid #daeaf6",
+                    fontSize: "14px",
+                    color: "#1a2b3c",
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
                 />
               </div>
 
               {/* Save Message */}
               {saveMsg && (
-                <div className={`text-[13px] font-medium text-center py-[8px] rounded-[8px] ${saveMsg.includes("success") ? "bg-[#d1fae5] text-[#065f46]" : "bg-[#fde8e8] text-[#c53030]"}`}>
+                <div style={{
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  textAlign: "center",
+                  padding: "8px",
+                  borderRadius: "8px",
+                  background: saveMsg.includes("success") ? "#d1fae5" : "#fde8e8",
+                  color: saveMsg.includes("success") ? "#065f46" : "#c53030",
+                }}>
                   {saveMsg}
                 </div>
               )}
             </div>
 
             {/* Modal Footer */}
-            <div className="px-[28px] pb-[24px] flex items-center justify-end gap-[10px]">
+            <div style={{ padding: "0 28px 24px", display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "10px" }}>
               <button
                 onClick={() => setIsEditing(false)}
-                className="px-[18px] py-[9px] rounded-[9px] text-[13px] font-semibold text-[#4a6275] bg-[#f0f5fa] hover:bg-[#e2ebf3] transition-colors cursor-pointer border-none"
+                style={{
+                  padding: "9px 18px",
+                  borderRadius: "9px",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  color: "#4a6275",
+                  background: "#f0f5fa",
+                  border: "none",
+                  cursor: "pointer",
+                }}
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveProfile}
                 disabled={saving}
-                className="px-[22px] py-[9px] rounded-[9px] text-[13px] font-semibold text-white bg-[#1a9bdc] hover:bg-[#1480bb] transition-all cursor-pointer border-none disabled:opacity-60"
+                style={{
+                  padding: "9px 22px",
+                  borderRadius: "9px",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  color: "#fff",
+                  background: "#1a9bdc",
+                  border: "none",
+                  cursor: saving ? "not-allowed" : "pointer",
+                  opacity: saving ? 0.6 : 1,
+                }}
               >
                 {saving ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>

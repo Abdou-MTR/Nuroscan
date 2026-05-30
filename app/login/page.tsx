@@ -431,7 +431,7 @@ export default function LoginPage() {
               </svg>
               <span>
                 {role === "patient"
-                  ? "Demo: ahmed.karim@example.com / patient123"
+                  ? "Demo: metiri.abderrahmane@example.com / patient123"
                   : "Demo: r.benali@neuroscan.ai / doctor123"}
               </span>
             </div>

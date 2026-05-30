@@ -382,7 +382,7 @@ export default function SignUpPage() {
               id="username"
               label="Full Name"
               type="text"
-              placeholder="e.g. Ahmed Karim"
+              placeholder="e.g. Abderrahmane Metiri"
               value={username}
               onChange={setUsername}
             />
