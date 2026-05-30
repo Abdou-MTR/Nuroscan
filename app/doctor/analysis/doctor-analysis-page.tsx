@@ -25,6 +25,8 @@ function DoctorAnalysisContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [isSendingReport, setIsSendingReport] = useState(false);
+  const [reportSent, setReportSent] = useState(false);
 
   useEffect(() => {
     async function loadScanAndPatient() {
@@ -109,15 +111,27 @@ function DoctorAnalysisContent() {
       if (scanRow.patient_id) {
         const { data: patientRow } = await supabase
           .from("patients")
-          .select("id, name, patient_id, date_of_birth")
+          .select("*")
           .eq("id", scanRow.patient_id)
           .single();
 
         if (patientRow) {
+          let patientEmail = patientRow.email;
+          // Fallback to profiles table if email isn't in patients table
+          if (!patientEmail) {
+            const { data: profileRow } = await supabase
+              .from("profiles")
+              .select("email")
+              .eq("id", scanRow.patient_id)
+              .single();
+            if (profileRow?.email) patientEmail = profileRow.email;
+          }
+
           setPatient({
             name: patientRow.name,
             patientId: patientRow.patient_id || patientRow.id,
             dateOfBirth: patientRow.date_of_birth || "N/A",
+            email: patientEmail,
           });
         }
       }
@@ -162,7 +176,7 @@ function DoctorAnalysisContent() {
     }
   };
 
-  const handleDownloadPDF = async () => {
+  const handleDownloadPDF = async (action: "download" | "base64" = "download") => {
     if (!scan) return;
     setDownloading(true);
     try {
@@ -334,6 +348,12 @@ function DoctorAnalysisContent() {
         jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
       };
 
+      if (action === "base64") {
+        const base64 = await html2pdf().set(opt).from(report).outputPdf("datauristring");
+        document.body.removeChild(overlay);
+        return base64;
+      }
+      
       await html2pdf().set(opt).from(report).save();
       document.body.removeChild(overlay);
     } catch (err) {
@@ -516,34 +536,113 @@ function DoctorAnalysisContent() {
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-[8px] mt-auto pt-2">
-          <button
-            onClick={handleDownloadPDF}
-            disabled={downloading}
-          style={{border : "none", background: "linear-gradient(135deg,#38BDF8,#0284C7)", boxShadow: "0 4px 12px rgba(14,165,233,0.25)",fontSize: "13px",fontWeight: "600" ,color: "#fff", padding: "10px 32px", borderRadius: "9px" }}
-            className="
-              flex-1 flex items-center justify-center gap-[6px]
-              px-[10px] py-[10px] rounded-[9px]
-              bg-gradient-to-br from-[#38BDF8] to-[#0284C7]
-              text-white text-[12.5px] font-semibold
-              shadow-[0_4px_12px_rgba(14,165,233,0.25)]
-              hover:shadow-[0_6px_16px_rgba(14,165,233,0.35)]
-              hover:-translate-y-px transition-all duration-200
-              disabled:opacity-70 disabled:cursor-not-allowed
-            "
-          >
-            Download PDF
-          </button>
-          
-          <button
-                    style={{border : "none", fontWeight: "600" , padding: "8px 20px", borderRadius: "9px" }}
-
-                              className="text-[13px] text-[#0284C7] font-bold bg-[rgba(14,165,233,0.08)] border border-[rgba(14,165,233,0.18)] px-[11px] py-[4px] rounded-[6px] hover:bg-[rgba(14,165,233,0.14)] transition-colors duration-150 inline-flex items-center gap-[4px]"
-
+        <div className="flex flex-col gap-[8px] mt-auto pt-2">
+          <div className="flex gap-[8px]">
+            <button
+              onClick={handleDownloadPDF}
+              disabled={downloading}
+              style={{border : "none", background: "linear-gradient(135deg,#38BDF8,#0284C7)", boxShadow: "0 4px 12px rgba(14,165,233,0.25)",fontSize: "13px",fontWeight: "600" ,color: "#fff", padding: "10px 32px", borderRadius: "9px" }}
+              className="
+                flex-1 flex items-center justify-center gap-[6px]
+                px-[10px] py-[10px] rounded-[9px]
+                bg-gradient-to-br from-[#38BDF8] to-[#0284C7]
+                text-white text-[12.5px] font-semibold
+                shadow-[0_4px_12px_rgba(14,165,233,0.25)]
+                hover:shadow-[0_6px_16px_rgba(14,165,233,0.35)]
+                hover:-translate-y-px transition-all duration-200
+                disabled:opacity-70 disabled:cursor-not-allowed
+              "
+            >
+              Download PDF
+            </button>
             
-            onClick={() => window.history.back()}
+            <button
+              style={{border : "none", fontWeight: "600" , padding: "8px 20px", borderRadius: "9px" }}
+              className="text-[13px] text-[#0284C7] font-bold bg-[rgba(14,165,233,0.08)] border border-[rgba(14,165,233,0.18)] px-[11px] py-[4px] rounded-[6px] hover:bg-[rgba(14,165,233,0.14)] transition-colors duration-150 inline-flex items-center gap-[4px]"
+              onClick={() => window.history.back()}
+            >
+              Back
+            </button>
+          </div>
+          
+          {/* Send Report to Patient Email Button */}
+          <button
+            onClick={async () => {
+              if (isSendingReport || reportSent) return;
+              
+              const emailTo = patient?.email;
+              if (!emailTo) {
+                alert("This patient does not have an email address associated with their profile.");
+                return;
+              }
+
+              setIsSendingReport(true);
+              try {
+                // Generate PDF as base64
+                const base64Pdf = await handleDownloadPDF("base64");
+                
+                // Send to API
+                const res = await fetch("/api/send-email", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    to: emailTo,
+                    subject: "NeuroScan Analysis Report: " + scan.fileName,
+                    text: `Hello ${patient?.name || 'Patient'},\n\nYour MRI scan analysis report is attached as a PDF.\n\nDiagnosis: ${scan.primaryDiagnosis}\n\nBest regards,\nNeuroScan Medical Team`,
+                    attachmentBase64: base64Pdf,
+                    filename: "NeuroScan_Report_" + scan.fileName + ".pdf",
+                  }),
+                });
+                
+                if (!res.ok) {
+                  const data = await res.json();
+                  throw new Error(data.error || "Failed to send");
+                }
+                
+                setReportSent(true);
+                setTimeout(() => setReportSent(false), 3000);
+              } catch (e: any) {
+                console.error(e);
+                alert("Failed to send email: " + e.message);
+              } finally {
+                setIsSendingReport(false);
+                setDownloading(false); // Reset downloading state from handleDownloadPDF
+              }
+            }}
+            disabled={isSendingReport || reportSent}
+            style={{border : "none", fontWeight: "600" ,color: "white", padding: "10px 32px", borderRadius: "9px",backgroundColor: "#10B981", cursor: isSendingReport || reportSent ? "not-allowed" : "pointer" }}
+            className={`w-full flex items-center justify-center gap-[6px] border text-[13px] transition-colors duration-150 ${
+              reportSent 
+                ? "bg-[#d1fae5] border-[#a7f3d0] text-[#065f46]" 
+                : isSendingReport
+                  ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
+                  : "bg-[rgba(14,165,233,0.08)] border-[rgba(14,165,233,0.18)] text-[#0284C7] hover:bg-[rgba(14,165,233,0.14)]"
+            }`}
           >
-            Back
+            {reportSent ? (
+              <>
+                <svg                    
+                     style={{width: "16px", height: "16px"}}
+ className="" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Sent Successfully!
+              </>
+            ) : isSendingReport ? (
+              <>
+                <div className="w-[14px] h-[14px] border-[2px] border-current border-t-transparent rounded-full animate-spin" />
+                Sending...
+              </>
+            ) : (
+              <>
+                <svg                    
+                     style={{width: "16px", height: "16px"}}
+ className="" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                Send Report to Patient
+              </>
+            )}
           </button>
         </div>
       </aside>

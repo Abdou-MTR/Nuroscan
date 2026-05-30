@@ -458,8 +458,8 @@ export default function LoginPage() {
 
             {/* Forgot password */}
             <div className="flex justify-end" style={{ marginBottom: 4 }}>
-              <a
-                href="#"
+              <Link
+                href="/forgot-password"
                 style={{
                   fontSize: "12px",
                   color: "var(--ice-accent2)",
@@ -468,7 +468,7 @@ export default function LoginPage() {
                 }}
               >
                 Forgot password?
-              </a>
+              </Link>
             </div>
 
             {/* Error */}

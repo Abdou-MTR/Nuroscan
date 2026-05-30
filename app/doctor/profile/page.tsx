@@ -529,7 +529,7 @@ export default function DoctorProfilePage() {
                   type="text"
                   value={editForm.name}
                   onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
-                  placeholder="Dr. Ahmed Karim"
+                  placeholder="Dr. Abderrahmane Metiri"
                   style={{
                     width: "100%",
                     padding: "10px 14px",
