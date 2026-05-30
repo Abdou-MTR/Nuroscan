@@ -19,6 +19,7 @@ import Link from "next/link";
 import type { UserRole } from "@/types";
 import { ROUTES } from "@/data/constants";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
 
 // ── Lock icon ─────────────────────────────────────────────────
 
@@ -143,6 +144,7 @@ function FormInput({
 
 export default function LoginPage() {
   const router = useRouter();
+  const supabase = createClient();
 
   const [role, setRole]         = useState<UserRole>("patient");
   const [email, setEmail]       = useState("");
@@ -150,36 +152,66 @@ export default function LoginPage() {
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState<string | null>(null);
 
-  // Mock credentials for demo
-  const MOCK_CREDENTIALS: Record<UserRole, { email: string; password: string }> = {
-    patient: { email: "ahmed.karim@example.com", password: "patient123" },
-    doctor:  { email: "r.benali@neuroscan.ai",   password: "doctor123"  },
-  };
-
   const handleSignIn = async () => {
     setError(null);
     setLoading(true);
 
-    // Simulate network latency
-    await new Promise((r) => setTimeout(r, 800));
-
-    const creds = MOCK_CREDENTIALS[role];
-
-    // Accept demo credentials OR any non-empty values for convenience
-    if (email.trim() && password.trim()) {
-      const destination =
-        role === "patient" ? ROUTES.PATIENT_DASHBOARD : ROUTES.DOCTOR_OVERVIEW;
-      router.push(destination);
-    } else {
+    if (!email.trim() || !password) {
       setError("Please enter your email and password.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        throw new Error(signInError.message);
+      }
+
+      // Upsert the profile row so it always exists in the public schema.
+      // This handles users who signed up before the profiles table existed.
+      if (data.user) {
+        const userRole = data.user.user_metadata?.role || role;
+        await supabase.from("profiles").upsert(
+          {
+            id: data.user.id,
+            full_name: data.user.user_metadata?.full_name || data.user.user_metadata?.username || email.split("@")[0],
+            email: data.user.email,
+            role: userRole,
+          },
+          { onConflict: "id" }
+        );
+
+        const destination = userRole === "patient" ? ROUTES.PATIENT_DASHBOARD : ROUTES.DOCTOR_OVERVIEW;
+        router.push(destination);
+      }
+    } catch (err: any) {
+      setError(err.message || "Invalid email or password.");
       setLoading(false);
     }
   };
 
-  const handleGoogleSignIn = () => {
-    const destination =
-      role === "patient" ? ROUTES.PATIENT_DASHBOARD : ROUTES.DOCTOR_OVERVIEW;
-    router.push(destination);
+  const handleGoogleSignIn = async () => {
+    setError(null);
+    try {
+      // Pass the selected role as a query param so the auth callback can save it
+      const destination = role === "patient" ? ROUTES.PATIENT_DASHBOARD : ROUTES.DOCTOR_OVERVIEW;
+      const callbackUrl = `${window.location.origin}/auth/callback?role=${role}&next=${destination}`;
+      const { error: oAuthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: callbackUrl,
+          queryParams: { access_type: 'offline', prompt: 'consent' },
+        }
+      });
+      if (oAuthError) throw new Error(oAuthError.message);
+    } catch (err: any) {
+      setError(err.message || "Could not sign in with Google.");
+    }
   };
 
   return (
@@ -560,8 +592,8 @@ export default function LoginPage() {
               style={{ marginTop: 18, fontSize: "13px", color: "var(--ice-text3)" }}
             >
               Don&apos;t have an account?{" "}
-              <a
-                href="#"
+              <Link
+                href="/signup"
                 style={{
                   color: "var(--ice-accent2)",
                   textDecoration: "none",
@@ -569,7 +601,7 @@ export default function LoginPage() {
                 }}
               >
                 Create one
-              </a>
+              </Link>
             </p>
           </div>
         </div>

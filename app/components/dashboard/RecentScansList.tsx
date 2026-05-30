@@ -111,11 +111,6 @@ export function RecentScansList({ scans, limit = 5 }: RecentScansListProps) {
                 {scan.primaryDiagnosis}
               </span>
 
-              {/* Status dot */}
-              <span className="flex items-center gap-[5px] text-[11.5px] font-medium text-[#355878] flex-shrink-0">
-                <span className={`w-[6px] h-[6px] rounded-full flex-shrink-0 ${dotClass}`} />
-                {scan.status}
-              </span>
             </Link>
           );
         })

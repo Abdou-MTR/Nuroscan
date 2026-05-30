@@ -67,8 +67,11 @@ function StepCard({
       <div className="flex items-center gap-3 mb-[14px]">
         {/* Step number badge */}
         <div
+        
           className="flex-shrink-0 flex items-center justify-center font-bold text-white"
           style={{
+            color: "#fff",
+            marginRight: 12,
             width: 28,
             height: 28,
             borderRadius: "50%",
@@ -106,7 +109,7 @@ function StepCard({
       {/* Title */}
       <div
         className="font-semibold mb-[6px]"
-        style={{ fontSize: "14px", color: "var(--ice-dark)" }}
+        style={{ fontSize: "14px", color: "var(--ice-dark)" , fontWeight: "600" ,letterSpacing: "-0.3px" }}
       >
         {title}
       </div>

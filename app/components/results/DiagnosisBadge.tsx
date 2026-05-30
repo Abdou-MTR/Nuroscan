@@ -59,7 +59,7 @@ function DiagnosisIcon({ diagnosis }: { diagnosis: DiagnosisClass }) {
     // Checkmark / shield
     return (
       <svg
-        className="w-[18px] h-[18px] fill-none"
+        className="w-[14px] h-[14px] fill-none"
         style={{ stroke: THEMES["No Tumor"].iconStroke }}
         viewBox="0 0 24 24"
         strokeWidth={1.8}
@@ -74,7 +74,7 @@ function DiagnosisIcon({ diagnosis }: { diagnosis: DiagnosisClass }) {
   // Warning triangle for any tumor
   return (
     <svg
-      className="w-[18px] h-[18px] fill-none"
+      className="w-[14px] h-[14px] fill-none"
       style={{ stroke: THEMES[diagnosis].iconStroke }}
       viewBox="0 0 24 24"
       strokeWidth={1.8}
@@ -105,7 +105,7 @@ export function DiagnosisBadge({ diagnosis, confidence, status }: DiagnosisBadge
       {/* Top row: icon + title */}
       <div className="flex items-center gap-[10px] mb-[10px]">
         <div
-          className="w-[36px] h-[36px] rounded-[9px] flex items-center justify-center flex-shrink-0"
+          className="w-[28px] h-[28px] rounded-[7px] flex items-center justify-center flex-shrink-0"
           style={{ background: theme.iconBg }}
         >
           <DiagnosisIcon diagnosis={diagnosis} />

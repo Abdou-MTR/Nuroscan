@@ -19,6 +19,8 @@ import {
   PATIENT_ACCOUNT_NAV_ITEMS,
   DOCTOR_NAV_ITEMS,
   DOCTOR_ACCOUNT_NAV_ITEMS,
+  ADMIN_NAV_ITEMS,
+  ADMIN_ACCOUNT_NAV_ITEMS,
 } from "@/data/constants";
 
 // ── Types ──────────────────────────────────────────────────────
@@ -91,7 +93,7 @@ function SidebarSection({ label }: { label: string }) {
 
 function SidebarUserFooter({ user }: { user: AppUser }) {
   const specialty =
-    user.role === "doctor" ? user.specialty : "Patient";
+    user.role === "admin" ? "System Administrator" : user.role === "doctor" ? user.specialty : "Patient";
 
   return (
     <div
@@ -102,6 +104,9 @@ function SidebarUserFooter({ user }: { user: AppUser }) {
       <div
         className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold flex-shrink-0"
         style={{
+          padding: "8px 12px",
+          marginRight: "8px",
+          marginTop: "4px",
           background: user.avatarGradient,
           color: user.avatarTextColor,
         }}
@@ -135,15 +140,21 @@ export function DashboardSidebar({
   const pathname = usePathname();
 
   const mainItems =
-    role === "patient" ? PATIENT_NAV_ITEMS : DOCTOR_NAV_ITEMS;
+    role === "admin"
+      ? ADMIN_NAV_ITEMS
+      : role === "patient"
+      ? PATIENT_NAV_ITEMS
+      : DOCTOR_NAV_ITEMS;
   const accountItems =
-    role === "patient"
+    role === "admin"
+      ? ADMIN_ACCOUNT_NAV_ITEMS
+      : role === "patient"
       ? PATIENT_ACCOUNT_NAV_ITEMS
       : DOCTOR_ACCOUNT_NAV_ITEMS;
 
   const isActive = (href: string) => {
     // Exact match for root portal pages
-    if (href === "/dashboard" || href === "/doctor") {
+    if (href === "/dashboard" || href === "/doctor" || href === "/admin") {
       return pathname === href;
     }
     return pathname.startsWith(href);
@@ -155,23 +166,7 @@ export function DashboardSidebar({
       style={{ minHeight: "calc(100vh - 62px)" }}
     >
       {/* Brand mark */}
-      <div
-        className="flex items-center gap-2 px-[18px] pb-[18px] mb-2.5"
-        style={{ borderBottom: "1px solid rgba(14,165,233,0.10)" }}
-      >
-        <div
-          className="w-7 h-7 rounded-[7px] flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0"
-          style={{ background: "linear-gradient(135deg,#38BDF8,#0284C7)" }}
-        >
-          N
-        </div>
-        <span
-          className="text-[14px] font-bold tracking-[-0.2px]"
-          style={{ color: "var(--ice-dark)" }}
-        >
-          NeuroScan AI
-        </span>
-      </div>
+      
 
       {/* Main nav section */}
       <SidebarSection label="Main" />

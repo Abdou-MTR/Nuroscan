@@ -15,6 +15,8 @@ function StatPill({ value, label }: { value: string; label: string }) {
       style={{
         background: "rgba(255,255,255,0.08)",
         border: "1px solid rgba(255,255,255,0.15)",
+        marginBottom: 12, marginRight: 12  ,
+        padding: "14px 30px",
       }}
     >
       <span
@@ -144,7 +146,8 @@ export function CtaBanner() {
               fontSize: "15px",
               color: "rgba(255,255,255,0.60)",
               lineHeight: 1.7,
-              maxWidth: 460,
+              maxWidth: 460, 
+              marginBottom: 12,
             }}
           >
             Join patients and clinicians using NeuroScan AI for fast, transparent
@@ -152,11 +155,13 @@ export function CtaBanner() {
           </p>
 
           {/* Stats strip */}
-          <div className="flex items-center gap-3 flex-wrap justify-center">
-            <StatPill value="98.05%" label="TTA Accuracy" />
-            <StatPill value="12,064" label="Training images" />
+          <div className="flex items-center gap-3 flex-wrap justify-center"
+          style={{ marginBottom: 12 }}>
+            
+            <StatPill value="98.05%" label="TTA Accuracy"  />
+            <StatPill value="12,064" label="Training images"  />
             <StatPill value="4"      label="Tumor classes" />
-            <StatPill value="<3s"    label="Per scan" />
+            <StatPill value="<10s"    label="Per scan" />
           </div>
 
           {/* CTA buttons */}
@@ -164,7 +169,7 @@ export function CtaBanner() {
             <Link
               href={ROUTES.LOGIN}
               className="no-underline font-semibold transition-all duration-200 inline-flex items-center"
-              style={{
+              style={{ marginBottom: 12, marginRight: 12  ,
                 padding: "14px 30px",
                 borderRadius: "10px",
                 fontSize: "14.5px",
@@ -179,6 +184,7 @@ export function CtaBanner() {
               href={ROUTES.LOGIN}
               className="no-underline font-semibold transition-all duration-200 inline-flex items-center"
               style={{
+                marginBottom: 12, marginRight: 12  ,
                 padding: "14px 30px",
                 borderRadius: "10px",
                 fontSize: "14.5px",
@@ -197,7 +203,7 @@ export function CtaBanner() {
             style={{
               fontSize: "11px",
               color: "rgba(255,255,255,0.30)",
-              marginTop: -8,
+              marginTop: 8,
             }}
           >
             For informational use only · Not a substitute for professional medical diagnosis

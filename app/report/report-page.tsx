@@ -1,9 +1,9 @@
 // src/app/report/page.tsx
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { getScanById, getPatientById } from "@/data/mock";
+import { createClient } from "@/utils/supabase/client";
 import type { DiagnosisClass } from "@/types";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -49,11 +49,72 @@ const DIAGNOSIS_THEME: Record<
 // ── Inner component ───────────────────────────────────────────────────────────
 
 function ReportContent() {
-  const params   = useSearchParams();
-  const scanId   = params.get("scanId") ?? "scan-001";
+  const params = useSearchParams();
+  const scanId = params.get("scanId") ?? "";
 
-  const scan    = getScanById(scanId);
-  const patient = scan ? getPatientById(scan.patientId) : undefined;
+  const [scan, setScan] = useState<any>(null);
+  const [patient, setPatient] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      if (!scanId) { setLoading(false); return; }
+      const supabase = createClient();
+
+      const { data: scanRow } = await supabase
+        .from("scans")
+        .select(`
+          id, filename, format, file_size_mb, image_type, scan_date,
+          uploaded_at, primary_diagnosis, confidence, probabilities,
+          status, model, image_url, heatmap_url, patient_id
+        `)
+        .eq("id", scanId)
+        .single();
+
+      if (scanRow) {
+        setScan({
+          id: scanRow.id,
+          fileName: scanRow.filename,
+          scanDate: scanRow.scan_date || scanRow.uploaded_at,
+          primaryDiagnosis: scanRow.primary_diagnosis,
+          confidence: scanRow.confidence,
+          probabilities: (scanRow.probabilities || []).map((p: any) => ({
+            className: p.className || p.label || "Unknown",
+            probability: p.probability ?? 0,
+            color: p.color ?? "#0284C7",
+          })),
+          status: scanRow.status,
+          reportUrl: null, // Dynamic PDF now
+        });
+
+        if (scanRow.patient_id) {
+          const { data: patientRow } = await supabase
+            .from("patients")
+            .select("id, name, patient_id, date_of_birth")
+            .eq("id", scanRow.patient_id)
+            .single();
+
+          if (patientRow) {
+            setPatient({
+              name: patientRow.name,
+              patientId: patientRow.patient_id || patientRow.id,
+              dateOfBirth: patientRow.date_of_birth || "N/A",
+            });
+          }
+        }
+      }
+      setLoading(false);
+    }
+    loadData();
+  }, [scanId]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#C8E4F6] to-[#B8D8EE]">
+        <div className="w-10 h-10 border-4 border-[#0A2540] border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   if (!scan || !patient) {
     return (
@@ -63,7 +124,7 @@ function ReportContent() {
     );
   }
 
-  const theme = DIAGNOSIS_THEME[scan.primaryDiagnosis];
+  const theme = DIAGNOSIS_THEME[scan.primaryDiagnosis as DiagnosisClass];
 
   const scanDateFormatted = new Date(scan.scanDate).toLocaleDateString("en-US", {
     month: "long",

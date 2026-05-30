@@ -3,11 +3,24 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import type { PatientTableRow } from "@/types";
 import { DIAGNOSIS_PILL_MAP } from "@/types";
 
+interface DynamicRow {
+  id: string;
+  patientName: string;
+  patientId: string;
+  dateOfBirth?: string;
+  scanId: string | null;
+  scanDate: string;
+  scanType: string;
+  primaryDiagnosis: string;
+  confidence: number;
+  status: string;
+  assignedDoctorId: string;
+}
+
 interface PatientsTableProps {
-  rows: PatientTableRow[];
+  rows: DynamicRow[];
 }
 
 const PILL_STYLES: Record<string, string> = {
@@ -15,14 +28,33 @@ const PILL_STYLES: Record<string, string> = {
   green: "bg-[rgba(16,185,129,0.08)]  text-[#10B981] border border-[rgba(16,185,129,0.2)]",
   amber: "bg-[rgba(245,158,11,0.08)]  text-[#92400E] border border-[rgba(245,158,11,0.2)]",
   blue:  "bg-[rgba(14,165,233,0.08)]  text-[#0284C7] border border-[rgba(14,165,233,0.18)]",
+  gray:  "bg-[rgba(107,152,186,0.08)] text-[#6B98BA] border border-[rgba(107,152,186,0.18)]",
 };
 
 const STATUS_DOT: Record<string, string> = {
   Critical: "bg-[#EF4444]",
   Review:   "bg-[#F59E0B]",
   Normal:   "bg-[#10B981]",
-  Pending:  "bg-[#F59E0B]",
+  Pending:  "bg-[#94A3B8]",
 };
+
+function getInitials(name: string) {
+  return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
+}
+
+const AVATAR_GRADIENTS = [
+  "linear-gradient(135deg, #38BDF8, #0284C7)",
+  "linear-gradient(135deg, #A78BFA, #7C3AED)",
+  "linear-gradient(135deg, #FB923C, #EA580C)",
+  "linear-gradient(135deg, #34D399, #059669)",
+  "linear-gradient(135deg, #F472B6, #DB2777)",
+];
+
+function getAvatarGradient(id: string) {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = id.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_GRADIENTS[Math.abs(hash) % AVATAR_GRADIENTS.length];
+}
 
 export function PatientsTable({ rows }: PatientsTableProps) {
   const [query, setQuery] = useState("");
@@ -32,9 +64,9 @@ export function PatientsTable({ rows }: PatientsTableProps) {
     if (!q) return rows;
     return rows.filter(
       (r) =>
-        r.name.toLowerCase().includes(q) ||
+        r.patientName.toLowerCase().includes(q) ||
         r.patientId.toLowerCase().includes(q) ||
-        r.lastDiagnosis.toLowerCase().includes(q) ||
+        r.primaryDiagnosis.toLowerCase().includes(q) ||
         r.status.toLowerCase().includes(q)
     );
   }, [rows, query]);
@@ -97,7 +129,7 @@ export function PatientsTable({ rows }: PatientsTableProps) {
         <table className="w-full border-collapse">
           <thead>
             <tr>
-              {["Patient", "Last Scan", "Diagnosis", "Confidence", "Status", ""].map((h) => (
+              {["Patient", "Last Scan", "Diagnosis", "Confidence", "Status", "Actions"].map((h) => (
                 <th
                   key={h}
                   className="
@@ -118,13 +150,16 @@ export function PatientsTable({ rows }: PatientsTableProps) {
             {filtered.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-[18px] py-[28px] text-center text-[13px] text-[#6B98BA]">
-                  No patients match &ldquo;{query}&rdquo;.
+                  {query ? <>No patients match &ldquo;{query}&rdquo;.</> : "No patients yet. Click \"Add Patient\" to create one."}
                 </td>
               </tr>
             ) : (
               filtered.map((row) => {
-                const pillVariant = DIAGNOSIS_PILL_MAP[row.lastDiagnosis];
-                const pillClass   = PILL_STYLES[pillVariant] ?? PILL_STYLES.blue;
+                const hasScan = row.scanId !== null;
+                const pillVariant = hasScan
+                  ? (DIAGNOSIS_PILL_MAP[row.primaryDiagnosis as keyof typeof DIAGNOSIS_PILL_MAP] ?? "gray")
+                  : "gray";
+                const pillClass   = PILL_STYLES[pillVariant] ?? PILL_STYLES.gray;
                 const dotClass    = STATUS_DOT[row.status]   ?? STATUS_DOT.Pending;
 
                 return (
@@ -141,17 +176,14 @@ export function PatientsTable({ rows }: PatientsTableProps) {
                     <td className="px-[18px] py-[12px]">
                       <div className="flex items-center gap-[10px]">
                         <div
-                          className="w-[32px] h-[32px] rounded-full flex items-center justify-center text-[12px] font-bold flex-shrink-0"
-                          style={{
-                            background: row.avatarGradient,
-                            color: row.avatarTextColor,
-                          }}
+                          className="w-[32px] h-[32px] rounded-full flex items-center justify-center text-[12px] font-bold flex-shrink-0 text-white"
+                          style={{ background: getAvatarGradient(row.patientId) }}
                         >
-                          {row.initials}
+                          {getInitials(row.patientName)}
                         </div>
                         <div>
                           <p className="text-[13.5px] font-semibold text-[#0A2540]">
-                            {row.name}
+                            {row.patientName}
                           </p>
                           <p className="text-[11px] text-[#6B98BA]">{row.patientId}</p>
                         </div>
@@ -160,7 +192,10 @@ export function PatientsTable({ rows }: PatientsTableProps) {
 
                     {/* Last scan date */}
                     <td className="px-[18px] py-[12px] text-[13.5px] text-[#6B98BA]">
-                      {row.lastScanDate}
+                      {hasScan
+                        ? new Date(row.scanDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                        : <span className="italic text-[#94A3B8]">No scans yet</span>
+                      }
                     </td>
 
                     {/* Diagnosis pill */}
@@ -172,14 +207,14 @@ export function PatientsTable({ rows }: PatientsTableProps) {
                           ${pillClass}
                         `}
                       >
-                        {row.lastDiagnosis}
+                        {hasScan ? row.primaryDiagnosis : "Awaiting Scan"}
                       </span>
                     </td>
 
                     {/* Confidence */}
                     <td className="px-[18px] py-[12px]">
                       <span className="text-[13.5px] font-bold text-[#0A2540]">
-                        {row.confidence}%
+                        {hasScan ? `${row.confidence}%` : <span className="font-normal text-[#94A3B8]">—</span>}
                       </span>
                     </td>
 
@@ -191,31 +226,55 @@ export function PatientsTable({ rows }: PatientsTableProps) {
                       </span>
                     </td>
 
-                    {/* View button */}
+                    {/* Actions */}
                     <td className="px-[18px] py-[12px] text-right">
-                      <Link
-                        href={`/dashboard/analysis?scanId=scan-001`}
-                        className="
-                          text-[12px] text-[#0284C7] font-semibold
-                          bg-[rgba(14,165,233,0.08)] border border-[rgba(14,165,233,0.18)]
-                          px-[11px] py-[4px] rounded-[6px]
-                          hover:bg-[rgba(14,165,233,0.14)] hover:text-[#0369A1]
-                          transition-colors duration-150
-                          inline-flex items-center gap-[4px]
-                          group-hover:border-[rgba(14,165,233,0.3)]
-                        "
-                      >
-                        View
-                        <svg
-                          className="w-[10px] h-[10px] stroke-current fill-none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={2.5}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
+                      <div className="flex items-center gap-[6px] justify-end">
+                        {/* Run Scan button */}
+                        <Link
+                          href={`/doctor/upload?patientId=${row.patientId}&patientName=${encodeURIComponent(row.patientName)}&patientDbId=${row.id}&patientDob=${row.dateOfBirth || ""}`}
+                          className="
+                            text-[12px] text-white font-semibold
+                            bg-gradient-to-br from-[#38BDF8] to-[#0284C7]
+                            px-[11px] py-[4px] rounded-[6px]
+                            hover:shadow-[0_3px_10px_rgba(14,165,233,0.3)]
+                            transition-all duration-150
+                            inline-flex items-center gap-[4px]
+                          "
+                          style={{fontSize: "12px",fontWeight: "600" ,color: "#fff", padding: "8px 20px", textDecoration: "none" }}
                         >
-                          <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                        </svg>
-                      </Link>
+                          <svg className="w-[10px] h-[10px] stroke-current fill-none" viewBox="0 0 24 24" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                          </svg>
+                          Run Scan
+                        </Link>
+
+                        {/* View button (only if scan exists) */}
+                        {hasScan && (
+                          <Link
+                            href={`/doctor/analysis?scanId=${row.scanId}`}
+                            className="
+                              text-[12px] text-[#0284C7] font-semibold
+                              bg-[rgba(14,165,233,0.08)] border border-[rgba(14,165,233,0.18)]
+                              px-[11px] py-[4px] rounded-[6px]
+                              hover:bg-[rgba(14,165,233,0.14)] hover:text-[#0369A1]
+                              transition-colors duration-150
+                              inline-flex items-center gap-[4px]
+                              group-hover:border-[rgba(14,165,233,0.3)]
+                            "
+                          >
+                            View
+                            <svg
+                              className="w-[10px] h-[10px] stroke-current fill-none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={2.5}
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                            </svg>
+                          </Link>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );

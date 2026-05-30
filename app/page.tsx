@@ -9,6 +9,7 @@ import { HeroSection }     from "@/components/landing/HeroSection";
 import { FeaturesGrid }    from "@/components/landing/FeaturesGrid";
 import { HowItWorksSteps } from "@/components/landing/HowItWorksSteps";
 import { CtaBanner }       from "@/components/landing/CtaBanner";
+import { ContactSection }  from "@/components/landing/ContactSection";
 
 export const metadata: Metadata = {
   title: "NeuroScan AI — Clinical-Grade Brain Tumor Detection",
@@ -19,6 +20,8 @@ export const metadata: Metadata = {
 // ── Footer ─────────────────────────────────────────────────────
 
 function LandingFooter() {
+
+
   return (
     <footer
       style={{
@@ -30,17 +33,20 @@ function LandingFooter() {
     >
       <div
         className="mx-auto flex items-center justify-between flex-wrap gap-4"
-        style={{ maxWidth: 1100, padding: "20px 40px" }}
+        style={{  padding: "20px 40px" }}
       >
         {/* Brand */}
         <div className="flex items-center gap-2">
           <div
             className="flex items-center justify-center font-bold text-white"
             style={{
+                  color: "#fff",
+          background: "linear-gradient(135deg,#38BDF8,#0284C7)",
+          boxShadow: "0 4px 12px rgba(14,165,233,0.30)",
               width: 26,
               height: 26,
               borderRadius: 6,
-              background: "linear-gradient(135deg,#38BDF8,#0284C7)",
+             marginRight: "6px",
               fontSize: "10px",
             }}
           >
@@ -48,10 +54,21 @@ function LandingFooter() {
           </div>
           <span
             className="font-semibold"
-            style={{ fontSize: "13px", color: "var(--ice-dark)" }}
+            style={{ fontSize: "13px", color: "var(--ice-dark)"   , fontWeight: "600" ,marginRight: "8px" }}
           >
-            NeuroScan AI
+            NeuroScan 
           </span>
+          <span
+        className="text-[9px] font-semibold px-8 py-1 rounded-full tracking-[0.5px]"
+        style={{
+          padding: "8px 8px",
+          background: "rgba(14,165,233,0.08)",
+          color: "var(--ice-accent)",
+          border: "1px solid rgba(14,165,233,0.18)",
+        }}
+      >
+        AI
+      </span>
         </div>
 
         {/* Disclaimer */}
@@ -114,6 +131,9 @@ export default function LandingPage() {
 
       {/* CTA banner with gradient dark card */}
       <CtaBanner />
+
+      {/* Contact Section */}
+      <ContactSection />
 
       {/* Footer */}
       <LandingFooter />

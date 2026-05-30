@@ -8,7 +8,7 @@
 // ─────────────────────────────────────────────────────────────────
 
 /** User roles mapped to separate portal routing */
-export type UserRole = "patient" | "doctor";
+export type UserRole = "patient" | "doctor" | "admin";
 
 /** Four supported tumor classification classes */
 export type DiagnosisClass =
@@ -92,7 +92,12 @@ export interface DoctorUser extends BaseUser {
   hospitalAffiliation: string;
 }
 
-export type AppUser = PatientUser | DoctorUser;
+/** Admin / system profile */
+export interface AdminUser extends BaseUser {
+  role: "admin";
+}
+
+export type AppUser = PatientUser | DoctorUser | AdminUser;
 
 // ─────────────────────────────────────────────────────────────────
 // SCAN ANALYSIS

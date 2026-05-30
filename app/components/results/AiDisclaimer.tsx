@@ -19,7 +19,7 @@ export function AiDisclaimer({ modelName, accuracy, xaiMethod, ttaPasses }: AiDi
     >
       {/* Info icon */}
       <svg
-        className="w-4 h-4 stroke-[#0284C7] fill-none flex-shrink-0 mt-[1px]"
+        className="w-3 h-3 stroke-[#0284C7] fill-none flex-shrink-0 mt-[2px]"
         viewBox="0 0 24 24"
         strokeWidth={1.8}
         strokeLinecap="round"

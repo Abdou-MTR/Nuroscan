@@ -40,6 +40,7 @@ function FeatureCard({
       <div
         className="flex items-center justify-center mb-3"
         style={{
+          marginBottom: 12,
           width: 40,
           height: 40,
           background: "var(--blue-bg)",
@@ -61,7 +62,8 @@ function FeatureCard({
       {/* Title */}
       <div
         className="font-semibold mb-[5px]"
-        style={{ fontSize: "14px", color: "var(--ice-dark)" }}
+        style={{ fontSize: "14px", color: "var(--ice-dark)" ,
+           fontWeight: "600" ,letterSpacing: "-0.3px", marginBottom: 10 }}
       >
         {title}
       </div>

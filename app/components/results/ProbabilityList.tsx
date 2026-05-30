@@ -36,6 +36,7 @@ function ProbRow({ item, isTop }: { item: ClassProbability; isTop: boolean }) {
     <div className="flex items-center gap-[9px]">
       {/* Label */}
       <span
+      style={{ color: isTop ? "#0A2540" : "#355878" }}
         className={`
           text-[12px] w-[82px] flex-shrink-0 font-medium
           ${isTop ? "text-[#0A2540] font-semibold" : "text-[#355878]"}
@@ -49,6 +50,7 @@ function ProbRow({ item, isTop }: { item: ClassProbability; isTop: boolean }) {
         <div
           className="h-full rounded-full transition-all duration-700 ease-out"
           style={{
+
             width: `${item.probability}%`,
             background: item.color,
             opacity: isTop ? 1 : 0.65,

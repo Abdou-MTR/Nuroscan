@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Ignore AI model files
+api/brain_tumor_resnet50v2_v5.keras

@@ -346,7 +346,7 @@ export function HeroSection() {
               style={{ animationDelay: "0.15s" }}
             >
               <Link
-                href={ROUTES.LOGIN}
+                href={ROUTES.PATIENT_UPLOAD}
                 className={cn(
                   "no-underline inline-flex items-center",
                   "font-semibold transition-all duration-200"
@@ -363,21 +363,7 @@ export function HeroSection() {
               >
                 Upload MRI scan →
               </Link>
-              <button
-                className="font-semibold transition-all duration-200"
-                style={{
-                  padding: "14px 26px",
-                  borderRadius: "10px",
-                  fontSize: "14.5px",
-                  background: "rgba(255,255,255,0.60)",
-                  color: "var(--ice-text2)",
-                  border: "1px solid rgba(14,165,233,0.20)",
-                  backdropFilter: "blur(8px)",
-                  cursor: "pointer",
-                }}
-              >
-                Watch demo
-              </button>
+            
             </div>
 
             {/* Stats strip */}
@@ -390,6 +376,8 @@ export function HeroSection() {
                   <div
                     className="font-bold"
                     style={{
+                      marginBottom: 2, 
+                      marginRight: 4,
                       fontSize: "26px",
                       color: "var(--ice-dark)",
                       letterSpacing: "-0.5px",
@@ -398,7 +386,9 @@ export function HeroSection() {
                     {stat.value}
                   </div>
                   <div
-                    style={{ fontSize: "12px", color: "var(--ice-text3)", marginTop: 2 }}
+                    style={{ fontSize: "12px", color: "var(--ice-text3)", 
+                      marginTop: 2,
+                      marginRight: 18,}}
                   >
                     {stat.label}
                   </div>

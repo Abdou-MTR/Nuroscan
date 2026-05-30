@@ -2,18 +2,84 @@
 "use client";
 
 import Link from "next/link";
-import { buildPatientStatCards, getScansForPatient } from "@/data/mock";
+import { useState, useEffect } from "react";
+import { createClient } from "@/utils/supabase/client";
 import { StatCards } from "@/components/dashboard/StatCards";
 import { RecentScansList } from "@/components/dashboard/RecentScansList";
-
-// In a real app this would come from your auth session.
-// For now we use the first mock patient: Ahmed Karim (P-001).
-const ACTIVE_PATIENT_ID = "P-001";
-const ACTIVE_PATIENT_NAME = "Ahmed Karim";
+import type { PatientStatCard, ScanRecord } from "@/types";
 
 export default function DashboardPage() {
-  const statCards = buildPatientStatCards(ACTIVE_PATIENT_ID);
-  const scans = getScansForPatient(ACTIVE_PATIENT_ID);
+  const [statCards, setStatCards] = useState<PatientStatCard[]>([]);
+  const [scans, setScans] = useState<ScanRecord[]>([]);
+  const [patientName, setPatientName] = useState("Patient");
+  const [patientId, setPatientId] = useState("P-001");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setLoading(false); return; }
+
+      const name = user.user_metadata?.full_name || user.email?.split('@')[0] || "Patient";
+      setPatientName(name);
+      setPatientId(user.id.substring(0, 8).toUpperCase());
+
+      const { data: userScans, error } = await supabase
+        .from("scans")
+        .select("*")
+        .eq("patient_id", user.id)
+        .order("uploaded_at", { ascending: false });
+
+      const fetchedScans: ScanRecord[] = [];
+      let totalScans = 0;
+      let criticalScans = 0;
+      let clearScans = 0;
+      let lastScanDate = "No scans yet";
+
+      if (!error && userScans) {
+        totalScans = userScans.length;
+        userScans.forEach((scan: any, index: number) => {
+          if (scan.primary_diagnosis === "No Tumor") clearScans++;
+          else if (scan.status === "Critical" || scan.status === "Review") criticalScans++;
+          
+          if (index === 0) {
+            lastScanDate = new Date(scan.uploaded_at || scan.scan_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+          }
+
+          fetchedScans.push({
+            id: scan.id,
+            patientId: scan.patient_id,
+            fileName: scan.filename,
+            format: scan.format,
+            fileSizeMb: scan.file_size_mb,
+            imageType: scan.image_type,
+            scanDate: scan.scan_date || scan.uploaded_at,
+            uploadedAt: scan.uploaded_at,
+            primaryDiagnosis: scan.primary_diagnosis,
+            confidence: scan.confidence,
+            probabilities: scan.probabilities,
+            status: scan.status,
+            model: scan.model,
+            imageUrl: scan.image_url,
+            heatmapUrl: scan.heatmap_url,
+          } as unknown as ScanRecord);
+        });
+      }
+
+      setScans(fetchedScans);
+
+      setStatCards([
+        { label: "Total Scans", value: totalScans, subText: "Lifetime MRI scans uploaded" },
+        { label: "Last Scan", value: totalScans > 0 ? "Completed" : "None", subText: lastScanDate, valueColor: totalScans > 0 ? "#10B981" : "#94A3B8" },
+        { label: "Findings", value: criticalScans, subText: "Scans requiring medical review", valueColor: criticalScans > 0 ? "#EF4444" : "#10B981" },
+        { label: "Clear Scans", value: clearScans, subText: "No tumor detected", valueColor: "#10B981" },
+      ]);
+
+      setLoading(false);
+    }
+    loadData();
+  }, []);
 
   return (
     <div className="flex-1 p-8 overflow-auto">
@@ -24,7 +90,7 @@ export default function DashboardPage() {
             Patient Dashboard
           </h1>
           <p className="text-[13px] text-[#6B98BA] mt-[3px]">
-            Welcome back, {ACTIVE_PATIENT_NAME} · Patient ID: {ACTIVE_PATIENT_ID}
+            {loading ? "Loading your data..." : `Welcome back, ${patientName} · Patient ID: ${patientId}`}
           </p>
         </div>
 
@@ -38,6 +104,8 @@ export default function DashboardPage() {
             hover:shadow-[0_6px_20px_rgba(14,165,233,0.4)]
             hover:-translate-y-px transition-all duration-200
           "
+                           style={{fontSize: "12px",fontWeight: "600" ,color: "#fff", padding: "10px 22px", textDecoration: "none" ,border: "none"  ,display: "inline-block" }}
+
         >
           <svg
             className="w-4 h-4 stroke-white fill-none flex-shrink-0"
@@ -56,9 +124,10 @@ export default function DashboardPage() {
       <StatCards cards={statCards} />
 
       {/* ── Content Grid: Upload CTA + Recent Scans ── */}
-      <div className="grid grid-cols-[1fr_320px] gap-[18px] mt-0">
+      <div  className="grid grid-cols-[1fr_320px] gap-[18px] mt-20 ">
         {/* Upload call-to-action panel */}
         <div
+         
           className="
             bg-white/40 backdrop-blur-[12px] border-2 border-dashed border-[rgba(14,165,233,0.25)]
             rounded-2xl px-7 py-12 flex flex-col items-center justify-center text-center
@@ -68,6 +137,7 @@ export default function DashboardPage() {
           onClick={() => (window.location.href = "/dashboard/upload")}
         >
           <div
+      
             className="
               w-[60px] h-[60px] bg-[rgba(14,165,233,0.08)] rounded-[16px]
               flex items-center justify-center mb-[14px]

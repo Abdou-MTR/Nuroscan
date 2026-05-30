@@ -66,7 +66,11 @@ export function DashboardLayout({
   className,
 }: DashboardLayoutProps) {
   const defaultTitle =
-    role === "patient" ? "Patient Dashboard" : "Clinician Portal";
+    role === "admin"
+      ? "Admin Portal"
+      : role === "patient"
+      ? "Patient Dashboard"
+      : "Clinician Portal";
 
   return (
     <div

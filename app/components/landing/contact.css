@@ -1,0 +1,110 @@
+/* ── GLASS ── */
+.glass{background:var(--ice-glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.75);border-radius:16px;box-shadow:0 4px 24px rgba(14,165,233,0.08)}
+.glass-sm{background:rgba(255,255,255,0.55);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.7);border-radius:12px;box-shadow:0 2px 12px rgba(14,165,233,0.06)}
+
+/* ── PAGE ── */
+#contact{background:var(--ice-bg);padding:100px 40px;position:relative;overflow:hidden}
+
+/* Decorative orbs */
+.orb{position:absolute;border-radius:50%;pointer-events:none;filter:blur(60px);opacity:0.35}
+.orb1{width:420px;height:420px;background:radial-gradient(circle,#BAE6FD,transparent);top:-80px;right:-100px}
+.orb2{width:300px;height:300px;background:radial-gradient(circle,#E0F2FE,transparent);bottom:60px;left:-60px}
+.orb3{width:180px;height:180px;background:radial-gradient(circle,#7DD3FC,transparent);top:40%;right:10%}
+
+/* Crystal decorations */
+.crystal{position:absolute;border-radius:50%;background:rgba(255,255,255,0.3);border:1px solid rgba(255,255,255,0.55);pointer-events:none}
+
+/* ── PAGE HEADER ── */
+.page-top{max-width:1000px;margin:0 auto 48px;text-align:center;position:relative;z-index:1}
+.screen-tag{display:inline-flex;align-items:center;gap:7px;background:rgba(14,165,233,0.08);border:1px solid rgba(14,165,233,0.18);color:var(--ice-accent2);font-size:10px;font-weight:600;letter-spacing:1.5px;padding:5px 14px;border-radius:99px;text-transform:uppercase;margin-bottom:20px}
+.screen-tag-dot{width:5px;height:5px;background:var(--ice-accent);border-radius:50%;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+.page-h1{font-size:46px;font-weight:700;color:var(--ice-dark);letter-spacing:-1.5px;line-height:1.1;margin-bottom:14px}
+.page-h1 span{color:var(--ice-accent);background:linear-gradient(135deg,#38BDF8,#0284C7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.page-sub{font-size:15px;color:var(--ice-text2);line-height:1.7;max-width:500px;margin:0 auto;font-weight:400}
+
+/* ── MAIN LAYOUT ── */
+.contact-layout{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:1fr 420px;gap:28px;position:relative;z-index:1;align-items:start}
+
+/* ── CONTACT CARDS ── */
+.contact-cards{display:flex;flex-direction:column;gap:16px}
+
+.contact-card{padding:26px 28px;display:flex;align-items:center;gap:20px;transition:transform .25s, box-shadow .25s;cursor:default;text-decoration:none;color:inherit}
+.contact-card:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(14,165,233,0.14)}
+
+.card-icon-wrap{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card-icon-wrap svg{width:24px;height:24px;fill:none;stroke:currentColor}
+
+.icon-whatsapp{background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(16,185,129,0.08));border:1px solid rgba(16,185,129,0.25)}
+.icon-whatsapp svg{stroke:#059669}
+.icon-email{background:linear-gradient(135deg,rgba(14,165,233,0.15),rgba(14,165,233,0.08));border:1px solid rgba(14,165,233,0.25)}
+.icon-email svg{stroke:var(--ice-accent2)}
+.icon-phone{background:linear-gradient(135deg,rgba(99,102,241,0.15),rgba(99,102,241,0.08));border:1px solid rgba(99,102,241,0.25)}
+.icon-phone svg{stroke:#6366F1}
+
+.card-body{flex:1;min-width:0}
+.card-label{font-size:10.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:5px;color:var(--ice-text3)}
+.card-name{font-size:15px;font-weight:700;color:var(--ice-dark);letter-spacing:-0.2px;margin-bottom:3px}
+.card-value{font-size:14px;color:var(--ice-text2);font-weight:500}
+
+.card-action{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:7px 14px;border-radius:8px;border:none;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .2s;flex-shrink:0;text-decoration:none}
+.card-action svg{width:13px;height:13px;fill:none;stroke:currentColor;flex-shrink:0}
+
+.action-green{background:rgba(16,185,129,0.1);color:#059669;border:1px solid rgba(16,185,129,0.2)}
+.action-green:hover{background:rgba(16,185,129,0.18);transform:translateY(-1px)}
+.action-blue{background:var(--blue-bg);color:var(--ice-accent2);border:1px solid var(--ice-border)}
+.action-blue:hover{background:rgba(14,165,233,0.14);transform:translateY(-1px)}
+.action-indigo{background:rgba(99,102,241,0.08);color:#6366F1;border:1px solid rgba(99,102,241,0.2)}
+.action-indigo:hover{background:rgba(99,102,241,0.15);transform:translateY(-1px)}
+
+/* ── CONTACT FORM ── */
+.form-card{padding:32px}
+
+.form-header{margin-bottom:24px}
+.form-title{font-size:18px;font-weight:700;color:var(--ice-dark);letter-spacing:-0.3px;margin-bottom:5px}
+.form-subtitle{font-size:13px;color:var(--ice-text3);line-height:1.5}
+
+.form-group{margin-bottom:16px}
+.form-label{font-size:12px;font-weight:600;color:var(--ice-text2);margin-bottom:6px;display:block;letter-spacing:0.2px}
+.form-input,.form-textarea{width:100%;padding:11px 14px;background:rgba(255,255,255,0.65);border:1px solid rgba(14,165,233,0.18);border-radius:9px;color:var(--ice-dark);font-size:14px;font-family:'Space Grotesk',sans-serif;outline:none;transition:all .2s;backdrop-filter:blur(8px)}
+.form-input:focus,.form-textarea:focus{border-color:var(--ice-accent);background:rgba(255,255,255,0.88);box-shadow:0 0 0 3px rgba(14,165,233,0.1)}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--ice-text3)}
+.form-textarea{resize:vertical;min-height:110px;line-height:1.6}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.btn-submit{width:100%;padding:13px;border-radius:9px;font-size:14px;font-weight:600;background:linear-gradient(135deg,#38BDF8,#0284C7);color:#fff;border:none;cursor:pointer;font-family:'Space Grotesk',sans-serif;box-shadow:0 4px 14px rgba(14,165,233,0.25);margin-top:4px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-submit svg{width:16px;height:16px;fill:none;stroke:currentColor}
+.btn-submit:hover{box-shadow:0 6px 20px rgba(14,165,233,0.38);transform:translateY(-1px)}
+.btn-submit:active{transform:translateY(0)}
+
+/* ── SUCCESS STATE ── */
+.success-state{display:flex;flex-direction:column;align-items:center;text-align:center;padding:32px 20px;gap:14px; animation:fadeUp .4s ease both}
+.success-icon{width:60px;height:60px;background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(16,185,129,0.08));border:1px solid rgba(16,185,129,0.3);border-radius:18px;display:flex;align-items:center;justify-content:center}
+.success-icon svg{width:28px;height:28px;stroke:#059669;fill:none}
+.success-title{font-size:17px;font-weight:700;color:var(--ice-dark)}
+.success-sub{font-size:13px;color:var(--ice-text3);line-height:1.6;max-width:280px}
+
+/* ── AVAILABILITY STRIP ── */
+.availability{max-width:1000px;margin:28px auto 0;position:relative;z-index:1;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.avail-left{display:flex;align-items:center;gap:11px}
+.avail-dot-wrap{position:relative;width:10px;height:10px;flex-shrink:0}
+.avail-dot{width:10px;height:10px;background:#10B981;border-radius:50%}
+.avail-dot::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1.5px solid rgba(16,185,129,0.3);animation:ripple 1.8s ease-out infinite}
+@keyframes ripple{0%{transform:scale(0.7);opacity:1}100%{transform:scale(2);opacity:0}}
+.avail-text{font-size:13px;color:var(--ice-text2);font-weight:500}
+.avail-text strong{color:var(--ice-dark);font-weight:700}
+.avail-hours{display:flex;align-items:center;gap:16px}
+.avail-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ice-text3)}
+.avail-item svg{width:13px;height:13px;stroke:var(--ice-accent2);fill:none;flex-shrink:0}
+
+/* ── FOOTER LINE ── */
+.contact-footer{max-width:1000px;margin:30px auto 0;text-align:center;font-size:12px;color:var(--ice-text3);position:relative;z-index:1}
+
+/* ── ANIMATION ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeUp .5s ease both}
+.fade-up:nth-child(1){animation-delay:.05s}
+.fade-up:nth-child(2){animation-delay:.12s}
+.fade-up:nth-child(3){animation-delay:.19s}
+.page-top{animation:fadeUp .4s ease both}
